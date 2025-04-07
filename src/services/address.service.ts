@@ -15,6 +15,7 @@ class AddressService {
                 })
                 
                 .catch((err) => {
+                    loggerService.error({ path: "/address/count", message: `${(err as Error).message}` }).flush();
                     reject(err);
                 });
         });
