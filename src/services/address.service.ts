@@ -10,10 +10,12 @@ class AddressService {
             this.request(addressRequest)
                 .then((response) => {
                     resolve({
-                        "count": response.size()
+                        "count": response.length
                     });
                 })
+                
                 .catch((err) => {
+                    loggerService.error({ path: "/address/count", message: `${(err as Error).message}` }).flush();
                     reject(err);
                 });
         });
