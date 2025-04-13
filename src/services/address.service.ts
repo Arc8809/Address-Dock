@@ -61,7 +61,7 @@ class AddressService {
             })
             .catch((err) => {
                 loggerService.error({ path: "/address/distance", message: `${(err as Error).message}` }).flush();
-
+                reject(err);
             })
         });
     }
