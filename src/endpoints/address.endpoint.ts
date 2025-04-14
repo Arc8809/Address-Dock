@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Request, response, Response } from 'express';
 import baseEndpoint from './base.endpoint';
 import addressService from '../services/address.service';
 import responseWrapper from '../services/response.service';
@@ -37,6 +37,17 @@ class AddressEndpoint extends baseEndpoint {
             res.status(400).send(responseWrapper(RESPONSE_STATUS_FAIL, RESPONSE_EVENT_READ,
             err));
         });
+    }
+
+    private getcity_post(req: Request, res: Response, next: NextFunction) {
+        addressService.getcity(req)
+        .then((response) => {
+            res.status(200).send(responseWrapper(RESPONSE_STATUS_OK, RESPONSE_EVENT_READ,
+            response));
+        }).catch((err) => {
+            res.status(400).send(responseWrapper(RESPONSE_STATUS_FAIL, RESPONSE_EVENT_READ,
+            err));
+        })
     }
 }
 

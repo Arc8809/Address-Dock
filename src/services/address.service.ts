@@ -38,7 +38,6 @@ class AddressService {
     }
 
     public async distance(addressRequest?: any): Promise<any> {
-        // Complete this
         return new Promise<any>(async (resolve, reject) => {
             this.request(addressRequest)
             .then((response) => {
@@ -64,6 +63,27 @@ class AddressService {
                 reject(err);
             })
         });
+    }
+
+    public async getcity(addressRequest?: any): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            this.request(addressRequest)
+            .then((response) => {
+                const zipcode = response[0]["zipcode"];
+                const city = response[0]["city"];
+                const state = response[0]["state"];
+
+                resolve({
+                    "zipcode": zipcode,
+                    "city": city,
+                    "state": state
+                });
+            })
+            .catch((err) => {
+                loggerService.error({ path: "/address/distance", message: `${(err as Error).message}` }).flush();
+                reject(err);
+            })
+        })
     }
 
     private getDistance(lat1: string, lon1: string, lat2: string, lon2: string) {
