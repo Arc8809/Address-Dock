@@ -41,6 +41,10 @@ class AddressService {
         return new Promise<any>(async (resolve, reject) => {
             this.request(addressRequest)
             .then((response) => {
+                if(response.length < 2) {
+                    reject("Search conditions must match to at least 2 addresses");
+                }
+
                 const address1 = response[0];
                 const address2 = response[1];
 
@@ -69,6 +73,10 @@ class AddressService {
         return new Promise<any>(async (resolve, reject) => {
             this.request(addressRequest)
             .then((response) => {
+                if(response.length == 0) {
+                    reject("No city was found");
+                }
+
                 const zipcode = response[0]["zipcode"];
                 const city = response[0]["city"];
                 const state = response[0]["state"];
