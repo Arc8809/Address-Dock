@@ -51,8 +51,8 @@ class AddressService {
                 var long2 = address2["longitude"];
 
                 var dist = this.getDistance(lat1, long1, lat2, long2);
-                var distKM = dist.toString();
-                var distMI = (dist * 0.621).toString();
+                var distKM = dist;
+                var distMI = dist * 0.621;
 
                 resolve({
                     "kilometers": distKM,
