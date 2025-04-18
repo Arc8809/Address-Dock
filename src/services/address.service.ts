@@ -42,6 +42,7 @@ class AddressService {
             this.request(addressRequest)
             .then((response) => {
                 if(response.length < 2) {
+                    loggerService.warning({ path: "/address/distance", message: "Search conditions did not match to at least 2 addresses." }).flush();
                     reject("Search conditions must match to at least 2 addresses");
                 }
 
@@ -72,12 +73,14 @@ class AddressService {
     public async getcity(addressRequest?: any): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
             if(addressRequest.body["zipcode"] == null || addressRequest.body.length > 1) {
+                loggerService.warning({ path: "/address/getcity", message: "Bad input. Only zipcode parameter should be used." }).flush();
                 reject("Getcity requires a zipcode attribute. Do not include any other attributes.");
             }
             
             this.request(addressRequest)
             .then((response) => {
                 if(response.length == 0) {
+                    loggerService.warning({ path: "/address/getcity", message: "No city was found for the zipcode provided."}).flush();
                     reject("No city was found for this zipcode.");
                 }
 
@@ -92,7 +95,7 @@ class AddressService {
                 loggerService.error({ path: "/address/getcity", message: `${(err as Error).message}` }).flush();
                 reject(err);
             })
-        })
+        });
     }
 
     private getDistance(lat1: string, lon1: string, lat2: string, lon2: string) {
