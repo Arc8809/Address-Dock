@@ -71,24 +71,25 @@ class AddressService {
 
     public async getcity(addressRequest?: any): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
+            if(addressRequest.body["zipcode"] == null || addressRequest.body.length > 1) {
+                reject("Getcity requires a zipcode attribute. Do not include any other attributes.");
+            }
+            
             this.request(addressRequest)
             .then((response) => {
                 if(response.length == 0) {
-                    reject("No city was found");
+                    reject("No city was found for this zipcode.");
                 }
 
-                const zipcode = response[0]["zipcode"];
                 const city = response[0]["city"];
                 const state = response[0]["state"];
 
                 resolve({
-                    "zipcode": zipcode,
-                    "city": city,
-                    "state": state
+                    "city": city + ", " + state,
                 });
             })
             .catch((err) => {
-                loggerService.error({ path: "/address/distance", message: `${(err as Error).message}` }).flush();
+                loggerService.error({ path: "/address/getcity", message: `${(err as Error).message}` }).flush();
                 reject(err);
             })
         })
