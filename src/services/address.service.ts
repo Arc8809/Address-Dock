@@ -1,4 +1,5 @@
 import loggerService from "./logger.service";
+type Location = { Latitude: number, Longitude: number};
 
 class AddressService {
     private static fetchUrl = 'https://ischool.gccis.rit.edu/addresses/';
@@ -39,6 +40,17 @@ class AddressService {
 
     public async distance(addressRequest?: any): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
+            var unit: string;
+            if(addressRequest.body["unit"] == "kilometers"
+            || addressRequest.body["unit"] == "km") {
+                unit = "kilometers";
+            } else if(addressRequest.body["unit"] == "miles"
+            || addressRequest.body["unit"] == "mi") {
+                unit = "miles";
+            } else {
+                unit = "anything";
+            }
+            
             this.request(addressRequest)
             .then((response) => {
                 if(response.length < 2) {
@@ -49,19 +61,35 @@ class AddressService {
                 const address1 = response[0];
                 const address2 = response[1];
 
-                var lat1 = address1["latitude"];
-                var long1 = address1["longitude"];
-                var lat2 = address2["latitude"];
-                var long2 = address2["longitude"];
+                var location1: Location;
+                var location2: Location;
+                location1 = {
+                    Latitude: address1["latitude"],
+                    Longitude: address1["longitude"]
+                }
+                location2 = {
+                    Latitude: address2["latitude"],
+                    Longitude: address2["longitude"]
+                }
 
-                var dist = this.getDistance(lat1, long1, lat2, long2);
+                var dist = this.getDistance(location1, location2);
                 var distKM = dist;
                 var distMI = dist * 0.621;
 
-                resolve({
-                    "kilometers": distKM,
-                    "miles": distMI
-                });
+                if(unit == "kilometers") {
+                    resolve({
+                        "kilometers": distKM
+                    });
+                } else if(unit == "miles") {
+                    resolve({
+                        "miles": distMI
+                    });
+                } else {
+                    resolve({
+                        "kilometers": distKM,
+                        "miles": distMI
+                    });
+                }
             })
             .catch((err) => {
                 loggerService.error({ path: "/address/distance", message: `${(err as Error).message}` }).flush();
@@ -98,14 +126,15 @@ class AddressService {
         });
     }
 
-    private getDistance(lat1: string, lon1: string, lat2: string, lon2: string) {
+    //private getDistance(lat1: string, lon1: string, lat2: string, lon2: string) {
+    private getDistance(location1: Location, location2: Location) {
         // Defining this function inside of this private method means it's
         // not accessible outside of it, which is perfect for encapsulation.
-        const lat1value = parseFloat(lat1);
-        const lon1value = parseFloat(lon1);
-        const lat2value = parseFloat(lat2);
-        const lon2value = parseFloat(lon2);
 
+        const lat1value = location1.Latitude;
+        const lon1value = location1.Longitude;
+        const lat2value = location2.Latitude;
+        const lon2value = location2.Longitude;
 
         const toRadians = (degrees: number) => {
             return degrees * (Math.PI / 180);

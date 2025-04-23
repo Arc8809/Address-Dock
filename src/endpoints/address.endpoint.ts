@@ -1,4 +1,4 @@
-import { NextFunction, Request, response, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import baseEndpoint from './base.endpoint';
 import addressService from '../services/address.service';
 import responseWrapper from '../services/response.service';
