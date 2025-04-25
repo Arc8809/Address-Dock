@@ -40,6 +40,8 @@ class AddressService {
 
     public async distance(addressRequest?: any): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
+            //use the "unit" parameter to request specifically kilometers or miles
+            //return both if "unit" parameter is not there or it is something else other than these
             var unit: string;
             if(addressRequest.body["unit"] == "kilometers"
             || addressRequest.body["unit"] == "km") {
@@ -53,6 +55,7 @@ class AddressService {
             
             this.request(addressRequest)
             .then((response) => {
+                //fails if the request does not pull up at least 2 addresses for comparing
                 if(response.length < 2) {
                     loggerService.warning({ path: "/address/distance", message: "Search conditions did not match to at least 2 addresses." }).flush();
                     reject("Search conditions must match to at least 2 addresses");
@@ -94,12 +97,13 @@ class AddressService {
             .catch((err) => {
                 loggerService.error({ path: "/address/distance", message: `${(err as Error).message}` }).flush();
                 reject(err);
-            })
+            });
         });
     }
 
     public async getcity(addressRequest?: any): Promise<any> {
         return new Promise<any>(async (resolve, reject) => {
+            //check required parameters
             if(addressRequest.body["zipcode"] == null || addressRequest.body.length > 1) {
                 loggerService.warning({ path: "/address/getcity", message: "Bad input. Only zipcode parameter should be used." }).flush();
                 reject("Getcity requires a zipcode attribute. Do not include any other attributes.");
@@ -107,6 +111,7 @@ class AddressService {
             
             this.request(addressRequest)
             .then((response) => {
+                //fails if the zipcode doesn't exist or doesn't have any addresses in the web service
                 if(response.length == 0) {
                     loggerService.warning({ path: "/address/getcity", message: "No city was found for the zipcode provided."}).flush();
                     reject("No city was found for this zipcode.");
@@ -122,11 +127,58 @@ class AddressService {
             .catch((err) => {
                 loggerService.error({ path: "/address/getcity", message: `${(err as Error).message}` }).flush();
                 reject(err);
-            })
+            });
         });
     }
 
-    //private getDistance(lat1: string, lon1: string, lat2: string, lon2: string) {
+    public async numbers(addressRequest?: any): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            //check required parameters
+            if(addressRequest.body["state"] == null
+                || (addressRequest.body["city"] == null && addressRequest.body["zipcode"] == null)
+                || addressRequest.body["street"] == null
+            ) {
+                loggerService.warning({ path: "/address/numbers", message: "Bad input. Numbers requires these parameters: state, city OR zipcode, street."}).flush();
+                reject("You may be missing some parameters. Make sure you include state, city OR zipcode, and street.");
+            }
+            
+            var lowest: number;
+            var highest: number;
+            lowest = 999999;
+            highest = 0;
+
+            this.request(addressRequest)
+            .then((response) => {
+                //fails if the requested street has no addresses or doesn't exist
+                if(response.length == 0) {
+                    loggerService.warning({ path: "/address/numbers", message: "The requested street either has no addresses or does not exist." }).flush();
+                    reject("This street has no addresses!");
+                }
+
+                for(let index = 0; index < response.length; index++) {
+                    const address = response[index];
+                    const number = parseInt(address["number"]);
+
+                    if(number < lowest) {
+                        lowest = number;
+                    }
+                    if(number > highest) {
+                        highest = number;
+                    }
+                }
+
+                resolve({
+                    "lowest": lowest,
+                    "highest": highest
+                });
+            })
+            .catch((err) => {
+                loggerService.error({ path: "/address/numbers", message: `${(err as Error).message}` }).flush();
+                reject(err);
+            });
+        });
+    }
+
     private getDistance(location1: Location, location2: Location) {
         // Defining this function inside of this private method means it's
         // not accessible outside of it, which is perfect for encapsulation.
