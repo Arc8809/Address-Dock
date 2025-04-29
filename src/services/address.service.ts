@@ -179,7 +179,8 @@ class AddressService {
         });
     }
 
-    private getDistance(location1: Location, location2: Location) {
+    // changed to public to get access for tests 
+    public getDistance(location1: Location, location2: Location) {
         // Defining this function inside of this private method means it's
         // not accessible outside of it, which is perfect for encapsulation.
 
